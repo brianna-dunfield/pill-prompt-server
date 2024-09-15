@@ -4,7 +4,6 @@ import knexConfig from '../knexfile.js';
 const db = knex(knexConfig);
 
 export async function getUserMedications(userId) {
-	console.log('USER ID:', userId);
 	try {
 		const medicationsList = await db('user_medication')
 			.where({ user_id: userId })
@@ -34,16 +33,23 @@ export async function getMedicationImgPath(medicationName) {
 			.where({ medication_name: `${medicationName}` })
 			.select('medication_photo_name')
 			.first();
-		console.log("IMAGE PATH:", medicationImgPath);
 		return medicationImgPath.medication_photo_name;
 	} catch (error) {
 		return console.error(error);
 	}
 }
 
-export async function createUserMedication({ newMedication }) {
+export async function createUserMedication(newMedication, userId) {
+	console.log(newMedication);
 	try {
-		const postingResult = await db('user_medication').insert(newMedication);
+		const postBody = {
+			"user_id": userId,
+			"medication_name": newMedication.medication_name,
+			"user_dosage": newMedication.user_dosage,
+			"pill_dosage": newMedication.pill_dosage,
+			"medication_dose_time": newMedication.medication_dose_time
+		}
+		const postingResult = await db('user_medication').insert(postBody);
 		const newMedicationId = postingResult[0];
 		const createdMedication = await db('user_medication')
 			.where({ id: newMedicationId })
@@ -54,9 +60,9 @@ export async function createUserMedication({ newMedication }) {
 	}
 }
 
-export function validateMedicationInput({ newMedication }) {
+export function validateMedicationInput(newMedication) {
+	console.log(newMedication);
 	const {
-		user_id,
 		medication_name,
 		user_dosage,
 		pill_dosage,
@@ -64,10 +70,9 @@ export function validateMedicationInput({ newMedication }) {
 	} = newMedication;
 
 	if (
-		!user_id ||
 		!medication_name ||
 		!user_dosage ||
-		pill_dosage ||
+		!pill_dosage ||
 		!medication_dose_time
 	) {
 		return false;
