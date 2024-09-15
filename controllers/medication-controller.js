@@ -7,8 +7,8 @@ import {
 } from '../models/medications.js';
 
 async function getAllUserMedications(req, res) {
-    const userId = req.params.userId;
-    console.log('USER ID IN CONTROLLER:', req.params.userId);
+	const userId = req.params.userId;
+	console.log('USER ID IN CONTROLLER:', req.params.userId);
 	const userMedications = await getUserMedications(userId);
 
 	if (!userMedications) {
@@ -20,20 +20,12 @@ async function getAllUserMedications(req, res) {
 	}
 }
 
-function getOneMedication(req, res) {
-	const result = async () => {
-		try {
-			const userMedication = getOneUserMedication(
-				req.params.userId,
-				req.params.medicationName
-			);
-			return userMedication;
-		} catch (error) {
-			res.status(404).send('Database error');
-		}
-	};
-	const userMedication = result();
+async function getOneMedication(req, res) {
+	const userId = req.params.userId;
+    const medicationName = req.params.medicationName;
+	const userMedication = await getOneUserMedication(userId, medicationName);
 	if (userMedication) {
+        console.log(userMedication);
 		res.json(userMedication);
 	} else {
 		res.status(404).send(
@@ -64,7 +56,7 @@ function getMedicationImg(req, res) {
 }
 
 function postUserMedication(req, res) {
-    const newMedication = req.body;
+	const newMedication = req.body;
 	const newMedicationObj = createUserMedication(newMedication);
 	res.send('New medication created: ', newMedicationObj);
 }
