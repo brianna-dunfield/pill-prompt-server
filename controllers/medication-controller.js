@@ -5,10 +5,14 @@ import {
 	createUserMedication,
 	validateMedicationInput,
 } from '../models/medications.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function getAllUserMedications(req, res) {
-    const userId = req.params.userId;
-    console.log('USER ID IN CONTROLLER:', req.params.userId);
+	const userId = req.params.userId;
 	const userMedications = await getUserMedications(userId);
 
 	if (!userMedications) {
@@ -20,20 +24,12 @@ async function getAllUserMedications(req, res) {
 	}
 }
 
-function getOneMedication(req, res) {
-	const result = async () => {
-		try {
-			const userMedication = getOneUserMedication(
-				req.params.userId,
-				req.params.medicationName
-			);
-			return userMedication;
-		} catch (error) {
-			res.status(404).send('Database error');
-		}
-	};
-	const userMedication = result();
+async function getOneMedication(req, res) {
+	const userId = req.params.userId;
+	const medicationName = req.params.medicationName;
+	const userMedication = await getOneUserMedication(userId, medicationName);
 	if (userMedication) {
+		console.log(userMedication);
 		res.json(userMedication);
 	} else {
 		res.status(404).send(
@@ -42,20 +38,11 @@ function getOneMedication(req, res) {
 	}
 }
 
-function getMedicationImg(req, res) {
-	const result = async () => {
-		try {
-			const medicationImg = getMedicationImgPath(
-				req.params.medicationName
-			);
-			return medicationImg;
-		} catch (error) {
-			res.status(404).send('Database error');
-		}
-	};
-	const medicationImg = result();
-	if (medicationImg) {
-		res.sendFile(path.join(__dirname, '../public/images', medicationImg));
+async function getMedicationImg(req, res) {
+	const medicationImgPath = await getMedicationImgPath(req.params.medicationName);
+    const imgPath = path.join(__dirname, '../public/images', `${medicationImgPath}`);
+	if (medicationImgPath) {
+		res.sendFile(imgPath);
 	} else {
 		res.status(404).send(
 			`No image found for medication: ${req.params.medicationName}`
@@ -63,13 +50,16 @@ function getMedicationImg(req, res) {
 	}
 }
 
-function postUserMedication(req, res) {
-    const newMedication = req.body;
-	const newMedicationObj = createUserMedication(newMedication);
-	res.send('New medication created: ', newMedicationObj);
+async function postUserMedication(req, res) {
+    console.log("BODY", req.body);
+	const newMedication = req.body;
+    const userId = req.params.userId;
+	const newMedicationObj = await createUserMedication(newMedication, userId);
+	res.status(200).json(newMedicationObj);
 }
 
 function validateMedication(req, res, next) {
+    console.log("REQ BODY", req.body);
 	const medicationInputValidation = validateMedicationInput(req.body);
 	if (medicationInputValidation) {
 		next();

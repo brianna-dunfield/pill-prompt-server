@@ -4,7 +4,6 @@ import knexConfig from '../knexfile.js';
 const db = knex(knexConfig);
 
 export async function getUserMedications(userId) {
-    console.log("USER ID:", userId)
 	try {
 		const medicationsList = await db('user_medication')
 			.where({ user_id: userId })
@@ -15,11 +14,12 @@ export async function getUserMedications(userId) {
 	}
 }
 
-export async function getOneUserMedication({ userId, medicationName }) {
+export async function getOneUserMedication(userId, medicationName) {
 	try {
 		const medicationInfo = await db('user_medication')
 			.where({ user_id: userId })
 			.where({ medication_name: medicationName })
+            .select('*')
 			.first();
 		return medicationInfo;
 	} catch (error) {
@@ -27,21 +27,29 @@ export async function getOneUserMedication({ userId, medicationName }) {
 	}
 }
 
-export async function getMedicationImgPath({ medicationName }) {
+export async function getMedicationImgPath(medicationName) {
 	try {
 		const medicationImgPath = await db('medication_photo')
-			.where({ medication_name: medicationName })
+			.where({ medication_name: `${medicationName}` })
 			.select('medication_photo_name')
 			.first();
-		return medicationImgPath;
+		return medicationImgPath.medication_photo_name;
 	} catch (error) {
 		return console.error(error);
 	}
 }
 
-export async function createUserMedication({ newMedication }) {
+export async function createUserMedication(newMedication, userId) {
+	console.log(newMedication);
 	try {
-		const postingResult = await db('user_medication').insert(newMedication);
+		const postBody = {
+			"user_id": userId,
+			"medication_name": newMedication.medication_name,
+			"user_dosage": newMedication.user_dosage,
+			"pill_dosage": newMedication.pill_dosage,
+			"medication_dose_time": newMedication.medication_dose_time
+		}
+		const postingResult = await db('user_medication').insert(postBody);
 		const newMedicationId = postingResult[0];
 		const createdMedication = await db('user_medication')
 			.where({ id: newMedicationId })
@@ -52,18 +60,23 @@ export async function createUserMedication({ newMedication }) {
 	}
 }
 
-export function validateMedicationInput({ newMedication }) {
+export function validateMedicationInput(newMedication) {
+	console.log(newMedication);
 	const {
-		user_id,
 		medication_name,
 		user_dosage,
 		pill_dosage,
 		medication_dose_time,
 	} = newMedication;
 
-    if(!user_id || !medication_name || !user_dosage || pill_dosage || !medication_dose_time){
-        return false;
-    }else{
-        return true;
-    }
+	if (
+		!medication_name ||
+		!user_dosage ||
+		!pill_dosage ||
+		!medication_dose_time
+	) {
+		return false;
+	} else {
+		return true;
+	}
 }
