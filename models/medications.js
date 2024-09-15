@@ -28,13 +28,14 @@ export async function getOneUserMedication(userId, medicationName) {
 	}
 }
 
-export async function getMedicationImgPath({ medicationName }) {
+export async function getMedicationImgPath(medicationName) {
 	try {
 		const medicationImgPath = await db('medication_photo')
 			.where({ medication_name: `${medicationName}` })
 			.select('medication_photo_name')
 			.first();
-		return medicationImgPath;
+		console.log("IMAGE PATH:", medicationImgPath);
+		return medicationImgPath.medication_photo_name;
 	} catch (error) {
 		return console.error(error);
 	}

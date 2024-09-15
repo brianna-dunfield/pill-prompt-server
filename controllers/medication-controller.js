@@ -5,6 +5,11 @@ import {
 	createUserMedication,
 	validateMedicationInput,
 } from '../models/medications.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function getAllUserMedications(req, res) {
 	const userId = req.params.userId;
@@ -22,10 +27,10 @@ async function getAllUserMedications(req, res) {
 
 async function getOneMedication(req, res) {
 	const userId = req.params.userId;
-    const medicationName = req.params.medicationName;
+	const medicationName = req.params.medicationName;
 	const userMedication = await getOneUserMedication(userId, medicationName);
 	if (userMedication) {
-        console.log(userMedication);
+		console.log(userMedication);
 		res.json(userMedication);
 	} else {
 		res.status(404).send(
@@ -34,20 +39,13 @@ async function getOneMedication(req, res) {
 	}
 }
 
-function getMedicationImg(req, res) {
-	const result = async () => {
-		try {
-			const medicationImg = getMedicationImgPath(
-				req.params.medicationName
-			);
-			return medicationImg;
-		} catch (error) {
-			res.status(404).send('Database error');
-		}
-	};
-	const medicationImg = result();
-	if (medicationImg) {
-		res.sendFile(path.join(__dirname, '../public/images', medicationImg));
+async function getMedicationImg(req, res) {
+	const medicationImgPath = await getMedicationImgPath(req.params.medicationName);
+    console.log("MEDICATION IMG PATH", medicationImgPath);
+    const imgPath = path.join(__dirname, '../public/images', `${medicationImgPath}`);
+    console.log(imgPath);
+	if (medicationImgPath) {
+		res.sendFile(imgPath);
 	} else {
 		res.status(404).send(
 			`No image found for medication: ${req.params.medicationName}`
