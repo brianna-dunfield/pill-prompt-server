@@ -42,7 +42,7 @@ async function getMedicationImg(req, res) {
 	const medicationImgPath = await getMedicationImgPath(req.params.medicationName);
     const imgPath = path.join(__dirname, '../public/images', `${medicationImgPath}`);
 	if (medicationImgPath) {
-		res.sendFile(imgPath);
+		res.send(imgPath);
 	} else {
 		res.status(404).send(
 			`No image found for medication: ${req.params.medicationName}`

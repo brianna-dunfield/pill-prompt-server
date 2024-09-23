@@ -10,6 +10,7 @@ export async function seed(knex) {
 	// Inserts seed entries
 	await knex('users').insert([
 		{
+			id: 1,
 			user_name: 'John Doe',
 			user_email: 'john.doe@example.com',
 		},
